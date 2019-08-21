@@ -24,9 +24,7 @@ nn=model.n.*2-1;
 v = reshape(real(1./sqrt(m)),model.n);   % ground truth velocity
 vv=interp2(v, 'nearest');                % define velocity on finer grid
 mm=1./(vv(:)).^2;                        % model on finer grid
-
-% Original 'inverse crime' code
- hh=model.h; nn=model.n; mm=m;  
+ 
 
 %% Compute arrays on fine grid
 
