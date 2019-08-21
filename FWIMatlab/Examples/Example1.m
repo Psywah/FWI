@@ -20,7 +20,7 @@ m0=1e6./(v0(:)).^2;             %Initial slowness model (initial guess)
 
 % Add Noise
 % % %eta=rand(n);                     % random no.'s from uniform distribution              
-% % eps=1e-2*v(1)*eta;                % Noise % of background  
+% % eps=1e-3*v(1)*eta;                % Noise % of background  
 % % vnoise=v+eps;                     % Add noise to velocity
 % % m=1e6./(vnoise(:)).^2;            % Noisy model
                   
