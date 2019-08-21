@@ -39,7 +39,7 @@ if type==1
         
        
         % FWI for group
-        [mw, hist, error]=FWIOnePixel(m, model,p, alpha , m0, tol, maxit); 
+        [mw, hist]=FWIfull(m, model,p, alpha , m0, tol, maxit); 
   
         % Initial guess for next group is result of previous
         m0=mw;
@@ -82,7 +82,7 @@ end
        model.f=f;
        
        % FWI for group
-       [mw, hist, error]=FWIOnePixel(m, model,p, alpha, m0, tol, maxit); 
+       [mw, hist]=FWIfull(m, model,p, alpha, m0, tol, maxit); 
        
        % Initial guess for next group = result of previous
        m0=mw;
