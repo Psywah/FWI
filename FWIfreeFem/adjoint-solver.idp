@@ -1,0 +1,29 @@
+
+func complex[int] adjointSolver(real[int] m){
+
+Ph mFEfun = mfun;
+//plot(mFEfun, cmm="wave data", value=1, fill=1,wait=debug);
+mFEfun[] = m;
+// global variational formulation
+Vh<complex> rhsglobal,uglob,u,v;
+
+macro Grad(u) [dx(u),dy(u)]             // EOM
+varf vaglobal(u,v) = int2d(Th)(-freq^2*mFEfun*u*v+Grad(u)'*Grad(v))
+             - int1d(Th,Robin)(1i*freq*u*v)
+             - int1d(Th,Robin)(gn*v)
+             - int2d(Th)(f*v)
+             + on(Dirichlet,u=g);
+
+matrix<complex> Aglobal;
+
+Aglobal = vaglobal(Vh,Vh,solver = UMFPACK);  // global matrix
+rhsglobal[] = vaglobal(0,Vh); 				 // global rhs
+
+rhsglobal[] *=-1;
+uglob[] = Aglobal^-1*rhsglobal[];
+
+return uglob[];
+
+
+
+}
