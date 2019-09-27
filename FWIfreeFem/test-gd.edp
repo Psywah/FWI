@@ -1,0 +1,22 @@
+// test gradient descent code
+
+func real F(complex[int] &u) {
+    complex t0 = u.re'*u.re + u.im'*u.im;
+    return real(t0)/2;
+}
+func complex[int] dF( complex[int] &u){
+    complex[int] grad = u; 
+    return grad;
+}
+
+int Ndof = 10;
+complex[int] u0(Ndof);
+for(int it=0;it<Ndof;it++){
+    u0[it] = randreal1();
+}
+real tol = 1e-6;
+int maxit = 20;
+
+include "gradient-descent.idp"
+complex[int] u = GradDescent(Ndof, u0,  tol,maxit);
+cout<< u << endl;

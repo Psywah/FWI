@@ -1,0 +1,57 @@
+
+include "getARGV.idp"
+int debug =getARGV("-debug",1);
+
+// Problem parameters               // Omega = unit square
+real freq = getARGV("-freq",10);    // frequency
+func f = 0;                         // source function
+real d1= sqrt(1./2), d2=sqrt(1./2); // direction of incomming wave
+func Nx = N.x;
+func Ny = N.y;
+func gn = 1i*freq*(d1*Nx+d2*Ny -1)*exp(1i*freq*(d1*x+d2*y)); // Robin BC
+func g = exp(1i*freq*(d1*x+d2*y));                     // Dirichlet BC
+
+func mfun = 1;
+mesh Thm = square(5, 5, flags=1);
+fespace Ph(Thm,P0);
+Ph mFEfun = mfun;
+plot(mFEfun, cmm="wave data", value=1, fill=1,wait=debug);
+
+// Boundary conditions
+int Dirichlet = 1;
+int Robin = 2;
+int[int] chlab=[1, Robin, 2, Robin, 3, Robin, 4, Robin];
+
+// Create mesh
+real h = freq^(-1.25);
+int Nnode = ceil(1./h);
+mesh Th = square(Nnode, Nnode, flags=1);
+Th = change(Th,refe=chlab);
+
+fespace Vh(Th,P2);        // P2 fem space
+
+
+// global variational formulation
+Vh<complex> rhsglobal,uglob,u,v;
+
+macro Grad(u) [dx(u),dy(u)]             // EOM
+varf vaglobal(u,v) = int2d(Th)(-freq^2*mFEfun*u*v+Grad(u)'*Grad(v))
+             - int1d(Th,Robin)(1i*freq*u*v)
+             - int1d(Th,Robin)(gn*v)
+             - int2d(Th)(f*v)
+             + on(Dirichlet,u=g);
+             
+matrix<complex> Aglobal;
+
+Aglobal = vaglobal(Vh,Vh,solver = UMFPACK);  // global matrix
+rhsglobal[] = vaglobal(0,Vh); 				 // global rhs
+
+rhsglobal[] *=-1;
+uglob[] = Aglobal^-1*rhsglobal[];
+Vh uReal;
+uReal[] = uglob[].re;
+
+plot(uReal,cmm="real part of solution",wait=debug,fill=1);
+
+
+

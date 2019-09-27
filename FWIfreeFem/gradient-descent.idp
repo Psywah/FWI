@@ -1,0 +1,38 @@
+// provide obj fun: F(u) 
+//         grad fun: dF(u)
+
+func real obj( complex[int] &u){ real val = F(u); return val;}
+func complex[int] gradient( complex[int] &u){ complex[int] grad = dF(u); return grad;}
+
+func complex[int] GradDescent(int Ndof, complex[int] &u0, real tol, int maxit)
+{
+    complex[int] u1(Ndof), p(Ndof),u=u0;
+    real lam = 0, val, val0=obj(u);
+    if(val0<tol){
+        cout << "initial guess good enough" << endl;
+        return u;
+    }
+    val = val0;
+    cout << "gradient descent searching.... with inital obj " + val<<endl;
+    for(int it=0; it< maxit;it++){
+        if(val <tol || val/val0 <tol){
+            cout << "converged in iter " + it +" with obj " + val << endl;
+            return u1;
+        }
+        else{
+        p = gradient(u);
+
+        // choose step size
+        complex t0 = p.re'*p.re + p.im'*p.im;
+        complex t1 = p.re'*u.re + p.im'*u.im;
+        lam = -real(t1)/real(t0);
+
+        p *=lam;
+        u += p;
+        val = obj(u);
+        cout << "    iter " + it + " with obj " + val << endl;
+        }
+    }
+
+}
+
