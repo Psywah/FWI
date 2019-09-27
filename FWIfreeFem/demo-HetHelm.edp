@@ -14,44 +14,29 @@ func g = exp(1i*freq*(d1*x+d2*y));                     // Dirichlet BC
 func mfun = 1;
 mesh Thm = square(5, 5, flags=1);
 fespace Ph(Thm,P0);
-Ph mFEfun = mfun;
-plot(mFEfun, cmm="wave data", value=1, fill=1,wait=debug);
+Ph mFEfun1 = mfun;
 
 // Boundary conditions
 int Dirichlet = 1;
 int Robin = 2;
 int[int] chlab=[1, Robin, 2, Robin, 3, Robin, 4, Robin];
 
-// Create mesh
+// Create mesh and function space
 real h = freq^(-1.25);
 int Nnode = ceil(1./h);
 mesh Th = square(Nnode, Nnode, flags=1);
 Th = change(Th,refe=chlab);
-
 fespace Vh(Th,P2);        // P2 fem space
 
 
-// global variational formulation
-Vh<complex> rhsglobal,uglob,u,v;
+Vh<complex> w;
+include "forward-solver.idp"
+w[] = forwardSolver(mFEfun1[]);
+Vh wReal;
+wReal[] = w[].re;
 
-macro Grad(u) [dx(u),dy(u)]             // EOM
-varf vaglobal(u,v) = int2d(Th)(-freq^2*mFEfun*u*v+Grad(u)'*Grad(v))
-             - int1d(Th,Robin)(1i*freq*u*v)
-             - int1d(Th,Robin)(gn*v)
-             - int2d(Th)(f*v)
-             + on(Dirichlet,u=g);
-             
-matrix<complex> Aglobal;
+plot(wReal,cmm="real part of solution",wait=debug,fill=1);
 
-Aglobal = vaglobal(Vh,Vh,solver = UMFPACK);  // global matrix
-rhsglobal[] = vaglobal(0,Vh); 				 // global rhs
-
-rhsglobal[] *=-1;
-uglob[] = Aglobal^-1*rhsglobal[];
-Vh uReal;
-uReal[] = uglob[].re;
-
-plot(uReal,cmm="real part of solution",wait=debug,fill=1);
 
 
 
