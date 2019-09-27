@@ -1,4 +1,4 @@
-
+//commet
 include "getARGV.idp"
 int debug =getARGV("-debug",1);
 
@@ -36,7 +36,3 @@ Vh wReal;
 wReal[] = w[].re;
 
 plot(wReal,cmm="real part of solution",wait=debug,fill=1);
-
-
-
-
