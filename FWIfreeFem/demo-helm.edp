@@ -1,0 +1,50 @@
+// run: FreeFem++ demo-helm.edp -freq 10
+include "getARGV.idp"
+int debug =getARGV("-debug",1);
+
+// Problem parameters               // Omega = unit square
+real freq = getARGV("-freq",10);    // frequency
+func c = 1;                         // wave speed
+func k = freq/c;                    // wave number
+func f = 0;                         // source function
+real d1= sqrt(1./2), d2=sqrt(1./2); // direction of incomming wave
+func Nx = N.x;                      // x component of normal
+func Ny = N.y;                      // y component of normal
+func gn = 1i*k*(d1*Nx+d2*Ny -1)*exp(1i*k*(d1*x+d2*y)); // Robin BC
+func g = exp(1i*k*(d1*x+d2*y));                        // Dirichlet BC
+
+// Boundary conditions
+int Dirichlet = 1;              // boundary label
+int Robin = 2;
+int[int] chlab=[1, Robin, 2, Robin, 3, Robin, 4, Robin];
+
+// Create mesh and function space
+real h = freq^(-1.25);          // will use P2 finite element
+int Nnode = ceil(1./h);         // number of node per direction
+mesh Th = square(Nnode, Nnode); // generate a mesh
+Th = change(Th,refe=chlab);     // change the boundary labels
+fespace Vh(Th,P2);              // P2 fem space
+
+// define variational form
+Vh<complex> u,v;
+macro Grad(u) [dx(u),dy(u)]// EOM
+varf a(u,v) = int2d(Th)(-k^2*u*v+Grad(u)'*Grad(v))
+             - int1d(Th,Robin)(1i*k*u*v)
+             - int1d(Th,Robin)(gn*v)
+             - int2d(Th)(f*v)
+             + on(Dirichlet,u=g);
+
+// assemble matrix and right-hand side
+matrix<complex> A;
+A = a(Vh,Vh,solver = UMFPACK);  // global matrix, use direct solver
+Vh<complex> rhs;
+rhs[] = a(0,Vh);                // global rhs
+rhs[] *=-1;                     // correct of sign of rhs
+
+// solve
+u[] = A^-1*rhs[];
+
+// visualisation 
+Vh uReal;
+uReal[] = u[].re;
+plot(uReal,cmm="real part of solution",wait=debug,fill=1);
